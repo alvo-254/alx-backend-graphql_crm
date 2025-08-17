@@ -133,3 +133,4 @@ class Query(graphene.ObjectType):
 
     def resolve_all_orders(root, info):
         return Order.objects.all()
+
