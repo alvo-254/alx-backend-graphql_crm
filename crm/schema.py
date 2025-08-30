@@ -1,8 +1,8 @@
 import re
 import graphene
 from graphene_django import DjangoObjectType
-from .models import Customer, Product, Order
 from django.db import transaction
+from .models import Customer, Product, Order
 
 # ------------------
 # GraphQL Types
@@ -111,11 +111,29 @@ class CreateOrder(graphene.Mutation):
         return CreateOrder(order=order)
 
 
+# New Mutation for Task 3
+class UpdateLowStockProducts(graphene.Mutation):
+    success = graphene.String()
+    updated = graphene.List(graphene.String)
+
+    def mutate(self, info):
+        updated_products = []
+        products = Product.objects.filter(stock__lt=10)
+        for p in products:
+            p.stock += 10
+            p.save()
+            updated_products.append(f"{p.name} -> {p.stock}")
+        return UpdateLowStockProducts(success="Restocked low-stock products", updated=updated_products)
+
+
+# Combine everything into ONE Mutation class
 class Mutation(graphene.ObjectType):
     create_customer = CreateCustomer.Field()
     bulk_create_customers = BulkCreateCustomers.Field()
     create_product = CreateProduct.Field()
     create_order = CreateOrder.Field()
+    update_low_stock_products = UpdateLowStockProducts.Field()
+
 
 # ------------------
 # Queries
@@ -133,22 +151,3 @@ class Query(graphene.ObjectType):
 
     def resolve_all_orders(root, info):
         return Order.objects.all()
-
-import graphene
-
-class UpdateLowStockProducts(graphene.Mutation):
-    success = graphene.String()
-    updated = graphene.List(graphene.String)
-
-    def mutate(self, info):
-        from crm.models import Product
-        updated_products = []
-        products = Product.objects.filter(stock__lt=10)
-        for p in products:
-            p.stock += 10
-            p.save()
-            updated_products.append(f"{p.name} -> {p.stock}")
-        return UpdateLowStockProducts(success="Restocked low-stock products", updated=updated_products)
-
-class Mutation(graphene.ObjectType):
-    update_low_stock_products = UpdateLowStockProducts.Field()
