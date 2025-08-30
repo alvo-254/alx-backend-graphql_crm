@@ -1,14 +1,22 @@
 #!/bin/bash
-# Script to delete inactive customers
+# Script to delete inactive customers (no orders in the last year)
 
-timestamp=$(date +"%Y-%m-%d %H:%M:%S")
-deleted=$(python manage.py shell -c "
-from crm.models import Customer, Order
-from datetime import timedelta, datetime
-cutoff = datetime.now() - timedelta(days=365)
-inactive = Customer.objects.exclude(order__order_date__gte=cutoff)
-count = inactive.count()
-inactive.delete()
-print(count)
-")
-echo "$timestamp - Deleted $deleted inactive customers" >> /tmp/customer_cleanup_log.txt
+cd /path/to/alx-backend-graphqlcrm
+
+# Run Django shell command
+python3 manage.py shell <<EOF
+from datetime import timedelta
+from django.utils import timezone
+from crm.models import Customer
+
+cutoff = timezone.now() - timedelta(days=365)
+inactive_customers = Customer.objects.filter(order__isnull=True) | Customer.objects.filter(order__created_at__lt=cutoff)
+
+count = inactive_customers.count()
+inactive_customers.delete()
+
+print(f"Deleted {count} inactive customers")
+EOF
+
+# Log the execution
+echo "$(date): Cleanup executed" >> /tmp/customercleanuplog.txt
