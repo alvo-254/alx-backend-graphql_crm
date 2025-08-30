@@ -134,3 +134,21 @@ class Query(graphene.ObjectType):
     def resolve_all_orders(root, info):
         return Order.objects.all()
 
+import graphene
+
+class UpdateLowStockProducts(graphene.Mutation):
+    success = graphene.String()
+    updated = graphene.List(graphene.String)
+
+    def mutate(self, info):
+        from crm.models import Product
+        updated_products = []
+        products = Product.objects.filter(stock__lt=10)
+        for p in products:
+            p.stock += 10
+            p.save()
+            updated_products.append(f"{p.name} -> {p.stock}")
+        return UpdateLowStockProducts(success="Restocked low-stock products", updated=updated_products)
+
+class Mutation(graphene.ObjectType):
+    update_low_stock_products = UpdateLowStockProducts.Field()
