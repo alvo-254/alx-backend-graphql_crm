@@ -1,1 +1,7 @@
-empty file 
+Django>=4.2,<5.0
+graphene-django
+djangorestframework
+django-filter
+gql
+requests
+django-crontab
