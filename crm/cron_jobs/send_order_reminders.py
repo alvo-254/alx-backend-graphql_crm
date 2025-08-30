@@ -1,44 +1,42 @@
 #!/usr/bin/env python3
-import sys
-import os
 from gql import gql, Client
 from gql.transport.requests import RequestsHTTPTransport
-from datetime import datetime
-
-# GraphQL endpoint
-GRAPHQL_ENDPOINT = "http://localhost:8000/graphql/"
+import datetime
 
 def main():
-    # Setup GraphQL client
+    # GraphQL endpoint (adjust if needed)
     transport = RequestsHTTPTransport(
-        url=GRAPHQL_ENDPOINT,
-        use_json=True,
+        url="http://localhost:8000/graphql/",
+        verify=True,
+        retries=3,
     )
     client = Client(transport=transport, fetch_schema_from_transport=True)
 
-    # GraphQL query: fetch recent orders (example query)
+    # Example query: get all orders with no reminders sent
     query = gql("""
-        query {
-            allOrders {
-                id
-                customer {
-                    name
-                    email
-                }
-                totalAmount
-            }
+    query {
+      allOrders {
+        id
+        customer {
+          name
+          email
         }
+        totalAmount
+      }
+    }
     """)
 
     try:
         result = client.execute(query)
-        with open("/tmp/orderreminderslog.txt", "a") as log:
-            log.write(f"{datetime.now()}: Successfully fetched orders\n")
-            for order in result.get("allOrders", []):
-                log.write(f"Reminder sent to {order['customer']['email']} for order {order['id']}\n")
+        orders = result.get("allOrders", [])
+        now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        with open("/tmp/order_reminders_log.txt", "a") as log:
+            log.write(f"[{now}] Fetched {len(orders)} orders for reminder\n")
+
     except Exception as e:
-        with open("/tmp/orderreminderslog.txt", "a") as log:
-            log.write(f"{datetime.now()}: Error fetching orders - {str(e)}\n")
+        with open("/tmp/order_reminders_log.txt", "a") as log:
+            log.write(f"Error: {str(e)}\n")
 
 if __name__ == "__main__":
     main()
