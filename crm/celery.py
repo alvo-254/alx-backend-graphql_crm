@@ -1,7 +1,13 @@
 import os
 from celery import Celery
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'crm.settings')
-app = Celery('crm')
-app.config_from_object('django.conf:settings', namespace='CELERY')
+# Set default Django settings
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "crm.settings")
+
+app = Celery("crm")
+
+# Load custom config from Django settings, using CELERY_ prefix
+app.config_from_object("django.conf:settings", namespace="CELERY")
+
+# Auto-discover tasks in installed apps
 app.autodiscover_tasks()
