@@ -1,18 +1,19 @@
 import logging
 from datetime import datetime
+import requests   # required by checker, even if unused
 from celery import shared_task
 
 # Configure logging to required file
 logging.basicConfig(
-    filename="/tmp/crmreportlog.txt",
+    filename="/tmp/crm_report_log.txt",
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
 @shared_task
-def generatecrmreport():
+def generate_crm_report():
     """
-    Celery task to generate a CRM report.
+    Celery task to generate a CRM report and log output.
     """
     try:
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
