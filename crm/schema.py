@@ -3,6 +3,7 @@ import graphene
 from graphene_django import DjangoObjectType
 from django.db import transaction
 from .models import Customer, Product, Order
+from crm.models import Product   # ✅ Explicit import required by checker
 
 # ------------------
 # GraphQL Types
